@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Trivia Parque Chatún</title>
+<title>Quién te gusta?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
@@ -87,11 +87,11 @@ header span{font-size:.9rem;color:var(--muted)}
 </style>
 </head>
 <body>
-<header><h1>Trivia Parque Chatún</h1><span id="score">Aciertos: 0</span></header>
+<header><h1>Quién te gusta?</h1><span id="score">Aciertos: 0</span></header>
 
 <main class="stage">
   <div class="card" id="card" aria-live="polite">
-    <h2 id="q">¿Qué tipo de parque es Chatún?</h2>
+    <h2 id="q">Quién te gusta?</h2>
     <p>Desliza la tarjeta hacia la respuesta correcta</p>
     <div class="hint"><span class="l">←</span><span class="r">→</span></div>
   </div>
@@ -111,9 +111,9 @@ header span{font-size:.9rem;color:var(--muted)}
 <script>
 (function(){
   var QUESTION = {
-    ok: "Parque ecológico",
-    bad: "Parque de atracciones",
-    explain: "Chatún es un parque ecológico: aquí se disfruta la naturaleza."
+    ok: "Esta",
+    bad: "la Karime",
+    explain: "Esta te encanta"
   };
   var card = document.getElementById("card");
   var result = document.getElementById("result");
