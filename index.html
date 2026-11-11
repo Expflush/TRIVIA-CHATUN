@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trivia Parque Chatún</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e8f1e2; --card:#fffdf6; --ink:#16301f; --muted:#587060;
+  --left:#2f7d6d; --right:#c9792b; --good:#2e8b4a; --bad:#b8402f;
+  --line:#c5d6bf;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10201a; --card:#1b3026; --ink:#eaf3e4; --muted:#9db8a5;
+    --left:#4fb3a0; --right:#e0974a; --good:#5cc47a; --bad:#e8715f;
+    --line:#2d4a3b;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#10201a; --card:#1b3026; --ink:#eaf3e4; --muted:#9db8a5;
+  --left:#4fb3a0; --right:#e0974a; --good:#5cc47a; --bad:#e8715f;
+  --line:#2d4a3b;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;flex-direction:column;overflow:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+header{padding:18px 20px 6px;display:flex;justify-content:space-between;align-items:baseline}
+header h1{margin:0;font-size:1.15rem;font-weight:800;letter-spacing:.2px}
+header span{font-size:.9rem;color:var(--muted)}
+.stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:12px 20px}
+.card{
+  width:100%;max-width:360px;background:var(--card);border:2px solid var(--line);
+  border-radius:28px;padding:36px 26px 30px;text-align:center;
+  touch-action:pan-y;cursor:grab;position:relative;
+  box-shadow:0 14px 30px rgba(16,40,28,.16);
+  transition:transform .25s ease, opacity .25s ease;
+}
+.card.drag{transition:none;cursor:grabbing}
+.card h2{margin:0 0 18px;font-size:1.7rem;line-height:1.2;font-weight:800}
+.card p{margin:0;color:var(--muted);font-size:.95rem}
+.hint{display:flex;justify-content:space-between;margin-top:26px;font-weight:700;font-size:1.4rem}
+.hint span{opacity:.35;transition:opacity .15s}
+.hint .l{color:var(--left)} .hint .r{color:var(--right)}
+.card.toL .hint .l,.card.toR .hint .r{opacity:1}
+.card.toL{border-color:var(--left)} .card.toR{border-color:var(--right)}
+.options{display:flex;gap:12px;padding:6px 20px 22px}
+.opt{
+  flex:1;border:0;border-radius:20px;padding:16px 10px;color:#fff;
+  font:inherit;font-weight:700;font-size:1rem;line-height:1.2;cursor:pointer;
+  min-height:76px;transition:transform .15s, outline-color .15s;
+  outline:3px solid transparent;outline-offset:3px;
+}
+.opt:focus-visible{outline-color:var(--ink)}
+.opt.l{background:#1f6657} .opt.r{background:#a65f17}
+.opt small{display:block;font-weight:500;opacity:.85;margin-bottom:4px;font-size:.8rem}
+.opt.hot{transform:scale(1.04)}
+.result{
+  position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;background:var(--bg);gap:10px;
+}
+.result.show{display:flex}
+.result .icon{font-size:4rem;line-height:1}
+.result h3{margin:0;font-size:2rem;font-weight:800}
+.result.ok h3{color:var(--good)} .result.no h3{color:var(--bad)}
+.result p{margin:0;max-width:300px;color:var(--muted);font-size:1.05rem}
+.again{
+  margin-top:14px;border:0;border-radius:18px;padding:14px 28px;background:var(--ink);color:var(--bg);
+  font:inherit;font-weight:700;font-size:1rem;cursor:pointer;
+}
+.again:focus-visible{outline:3px solid var(--left);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){.card,.opt{transition:none}}
+</style>
+</head>
+<body>
+<header><h1>Trivia Parque Chatún</h1><span id="score">Aciertos: 0</span></header>
+
+<main class="stage">
+  <div class="card" id="card" aria-live="polite">
+    <h2 id="q">¿Qué tipo de parque es Chatún?</h2>
+    <p>Desliza la tarjeta hacia la respuesta correcta</p>
+    <div class="hint"><span class="l">←</span><span class="r">→</span></div>
+  </div>
+  <div class="result" id="result" role="status">
+    <div class="icon" id="icon"></div>
+    <h3 id="rtitle"></h3>
+    <p id="rtext"></p>
+    <button class="again" id="again">Jugar otra vez</button>
+  </div>
+</main>
+
+<div class="options">
+  <button class="opt l" id="bl"><small>← Izquierda</small><span id="tl"></span></button>
+  <button class="opt r" id="br"><small>Derecha →</small><span id="tr"></span></button>
+</div>
+
+<script>
+(function(){
+  var QUESTION = {
+    ok: "Parque ecológico",
+    bad: "Parque de atracciones",
+    explain: "Chatún es un parque ecológico: aquí se disfruta la naturaleza."
+  };
+  var card = document.getElementById("card");
+  var result = document.getElementById("result");
+  var bl = document.getElementById("bl"), br = document.getElementById("br");
+  var score = 0, answers = [], locked = false;
+  var startX = 0, dx = 0, dragging = false, THRESHOLD = 90;
+
+  function setup(){
+    locked = false; dx = 0;
+    // La respuesta correcta cae a veces a la izquierda y a veces a la derecha
+    answers = Math.random() < 0.5
+      ? [{t:QUESTION.ok, ok:true},{t:QUESTION.bad, ok:false}]
+      : [{t:QUESTION.bad, ok:false},{t:QUESTION.ok, ok:true}];
+    document.getElementById("tl").textContent = answers[0].t;
+    document.getElementById("tr").textContent = answers[1].t;
+    result.classList.remove("show","ok","no");
+    card.style.transition = "none";
+    card.style.transform = "";
+    card.style.opacity = 1;
+    card.className = "card";
+    void card.offsetWidth;
+    card.style.transition = "";
+  }
+
+  function choose(side){
+    if(locked) return;
+    locked = true;
+    var pick = answers[side === "L" ? 0 : 1];
+    card.className = "card";
+    card.style.transform = "translateX(" + (side === "L" ? -120 : 120) + "%) rotate(" + (side === "L" ? -18 : 18) + "deg)";
+    card.style.opacity = 0;
+    if(pick.ok) score++;
+    document.getElementById("score").textContent = "Aciertos: " + score;
+    setTimeout(function(){
+      result.className = "result show " + (pick.ok ? "ok" : "no");
+      document.getElementById("icon").textContent = pick.ok ? "🌿" : "❌";
+      document.getElementById("rtitle").textContent = pick.ok ? "¡Correcto!" : "Incorrecto";
+      document.getElementById("rtext").textContent = pick.ok
+        ? QUESTION.explain
+        : "La respuesta correcta era “" + QUESTION.ok + "”. " + QUESTION.explain;
+      document.getElementById("again").focus();
+    }, 260);
+  }
+
+  function lean(){
+    card.classList.toggle("toL", dx < -30);
+    card.classList.toggle("toR", dx > 30);
+    bl.classList.toggle("hot", dx < -THRESHOLD);
+    br.classList.toggle("hot", dx > THRESHOLD);
+  }
+
+  card.addEventListener("pointerdown", function(e){
+    if(locked) return;
+    dragging = true; startX = e.clientX;
+    card.classList.add("drag");
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    dx = e.clientX - startX;
+    card.style.transform = "translateX(" + dx + "px) rotate(" + (dx / 18) + "deg)";
+    lean();
+  });
+  function release(){
+    if(!dragging) return;
+    dragging = false;
+    card.classList.remove("drag");
+    if(dx < -THRESHOLD) choose("L");
+    else if(dx > THRESHOLD) choose("R");
+    else { dx = 0; card.style.transform = ""; lean(); }
+  }
+  card.addEventListener("pointerup", release);
+  card.addEventListener("pointercancel", release);
+
+  bl.addEventListener("click", function(){ choose("L"); });
+  br.addEventListener("click", function(){ choose("R"); });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "ArrowLeft") choose("L");
+    if(e.key === "ArrowRight") choose("R");
+  });
+  document.getElementById("again").addEventListener("click", setup);
+
+  setup();
+})();
+</script>
+</body>
+</html>
